@@ -1,4 +1,7 @@
 #!/usr/bin/python3
+"""
+This module contains a function that calculates the fewest number of operations
+"""
 
 
 def minOperations(n):
