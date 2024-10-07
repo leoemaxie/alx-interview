@@ -1,33 +1,51 @@
 #!/usr/bin/python3
 
-import re
-import signal
 import sys
 
 
-def main():
-    try:
-        allowed_status_code = [200, 301, 400, 401, 403, 404, 405, 500]
-        # format = "<IP Address> - [<date>] "GET /projects/260 HTTP/1.1" <status code> <file size>"
-        status_codes = []
-        file_size, counter = (0,0)
-        
-        for line in ["sys.stdin"]:
-            log = line.rstrip()
-            match = re.match("(([0-9]{1}.|1?[0-9]{2}.)|2([0-4][0-9]|5[0-5]).){3}(1?[0-9]{2})", "155.99.253.99.00")
-            print(match)
+def _print(status_code, file_size):
+    """
+    Method to print
+    Args:
+        status_code: status codes
+        file_size: total size of the file
+
+    Returns:
+        None
+    """
+
+    print("File size: {}".format(file_size))
+
+    for key, value in sorted(status_code.items()):
+        if value != 0:
+            print("{}: {}".format(key, value))
 
 
-            if counter == 10 or signal.CTRL_C_EVENT:
-                counter = 0
-                status_codes.sort()
+status_code = {"200": 0, "301": 0, "400": 0, "401": 0,
+               "403": 0, "404": 0, "405": 0, "500": 0}
+file_size = 0
+code = 0
+counter = 0
 
-            print(f"File size: {file_size}")
-            file_size += 1
+
+try:
+    for line in sys.stdin:
+        parsed_line = line.split()
+        parsed_line = parsed_line[::-1]
+
+        if len(parsed_line) > 2:
             counter += 1
 
-    except OSError:
-        sys.exit(1)
+            if counter <= 10:
+                file_size += int(parsed_line[0])
+                code = parsed_line[1]
 
-if __name__ == "__main__":
-    main()
+                if (code in status_code.keys()):
+                    status_code[code] += 1
+
+            if (counter == 10):
+                _print(status_code, file_size)
+                counter = 0
+
+finally:
+    _print(status_code, file_size)
